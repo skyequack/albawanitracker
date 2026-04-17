@@ -1,0 +1,80 @@
+// Petty Cash Management System Schema
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  clerkId   String?
+  email     String   @unique
+  name      String
+  role      String   @default("PM")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  projects  Project[]
+  issuedTransactions Transaction[] @relation("IssuedBy")
+}
+
+model Employee {
+  id         String   @id @default(cuid())
+  name       String
+  employeeId String?  @unique
+  role       String   @default("Worker")
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  transactions Transaction[]
+}
+
+model Project {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  createdBy   String
+  creator     User     @relation(fields: [createdBy], references: [id], onDelete: Cascade)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  transactions Transaction[]
+
+  @@index([createdBy])
+}
+
+model ProjectDirectory {
+  project String @id
+  region  String
+
+  @@map("projects")
+}
+
+model Transaction {
+  id          String   @id @default(cuid())
+  amount      Float
+  note        String?
+  employeeId  String
+  employee    Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  projectId   String
+  project     Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  issuedById  String
+  issuedBy    User     @relation("IssuedBy", fields: [issuedById], references: [id], onDelete: Cascade)
+  status      String   @default("issued") // "issued", "cleared", "pending"
+  issuedAt    DateTime @default(now())
+  clearedAt   DateTime?
+  invoiceUrl  String?
+  clearingNote String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([employeeId])
+  @@index([projectId])
+  @@index([issuedById])
+  @@index([status])
+}
