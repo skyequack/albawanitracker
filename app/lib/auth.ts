@@ -30,7 +30,13 @@ export async function getCurrentUser() {
     clerkUser.username ||
     email;
 
-  const role = clerkUser.username === SUPERUSER_USERNAME ? "ADMIN" : "PM";
+  // Check if user already exists in database to preserve their assigned role
+  const existingUser = await prisma.user.findUnique({
+    where: { id: userId },
+  });
+
+  // Only set ADMIN role if user is the superuser; otherwise preserve existing role or default to PM
+  const role = clerkUser.username === SUPERUSER_USERNAME ? "ADMIN" : (existingUser?.role || "PM");
 
   return prisma.user.upsert({
     where: { id: userId },
