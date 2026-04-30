@@ -37,6 +37,12 @@ export async function getCurrentUser() {
 
   // Only set ADMIN role if user is the superuser; otherwise preserve existing role or default to PM
   const role = clerkUser.username === SUPERUSER_USERNAME ? "ADMIN" : (existingUser?.role || "PM");
+  
+  console.log(`[AUTH DEBUG] User: ${name} (${email})`);
+  console.log(`[AUTH DEBUG] Clerk username: ${clerkUser.username}`);
+  console.log(`[AUTH DEBUG] Existing user found: ${!!existingUser}`);
+  console.log(`[AUTH DEBUG] Existing user role: ${existingUser?.role}`);
+  console.log(`[AUTH DEBUG] Calculated role: ${role}`);
 
   return prisma.user.upsert({
     where: { id: userId },
@@ -44,7 +50,8 @@ export async function getCurrentUser() {
       clerkId: userId,
       email,
       name,
-      role,
+      // Preserve ADMIN role if user already has it; otherwise use calculated role
+      role: existingUser?.role === "ADMIN" ? "ADMIN" : role,
     },
     create: {
       id: userId,
