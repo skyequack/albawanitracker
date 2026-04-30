@@ -36,7 +36,11 @@ export function Table<T extends Record<string, unknown>>({
             <tr
               key={idx}
               onClick={() => onRowClick?.(row)}
-              className="group hover:bg-slate-50/80 transition-all cursor-pointer"
+              className={`group transition-all ${
+                onRowClick
+                  ? "hover:bg-slate-50/80 cursor-pointer"
+                  : "hover:bg-slate-50/80"
+              }`}
             >
               {columns.map((col) => (
                 <td key={col.accessor} className="px-6 py-5 text-sm font-medium text-slate-600 group-hover:text-slate-900 transition-colors">

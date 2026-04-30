@@ -147,6 +147,11 @@ export default function TransactionsPage() {
     }
   };
 
+  const openClearModal = (transaction: Transaction) => {
+    setSelectedTransaction(transaction);
+    setIsClearModalOpen(true);
+  };
+
   const filteredTransactions =
     statusFilter === "all"
       ? transactions
@@ -198,17 +203,21 @@ export default function TransactionsPage() {
               status: t.status,
               issuedDisplay: new Date(t.issuedAt).toLocaleDateString(),
               action:
-                t.status === "issued" ? "Clear" : t.status,
+                t.status === "issued" ? (
+                  <Button
+                    type="button"
+                    size="sm"
+                    onClick={(event) => {
+                      event.stopPropagation();
+                      openClearModal(t);
+                    }}
+                  >
+                    Clear
+                  </Button>
+                ) : (
+                  t.status
+                ),
             }))}
-            onRowClick={(row) => {
-              const trans = filteredTransactions.find(
-                (t) => t.employee.name === row.employeeName && t.amount === parseFloat(row.amountDisplay.slice(1))
-              );
-              if (trans && trans.status === "issued") {
-                setSelectedTransaction(trans);
-                setIsClearModalOpen(true);
-              }
-            }}
           />
         ) : (
           <p className="text-gray-500 text-center py-8">No transactions found</p>
